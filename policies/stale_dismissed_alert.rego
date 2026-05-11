@@ -1,18 +1,20 @@
-package compliance_framework.dependabot_granular_open_alert
+package compliance_framework.dependabot_granular_stale_dismissed_alert
 
-import future.keywords.in
+ninety_days_ns := 7776000000000000
 
-violation[{"id": "open_cve_alert"}] if {
-	input[0].state == "open"
+violation[{"id": "dismissal_not_reassessed"}] if {
+	input[0].state == "dismissed"
+	input[0].dismissed_at != null
+	time.parse_rfc3339_ns(input[0].dismissed_at) < time.now_ns() - ninety_days_ns
 }
 
 risk_templates := [{
-	"name": "open_cve_vulnerability",
-	"title": "{{ .cve_id }}: {{ .severity }} severity in {{ .package_name }}",
-	"statement": "{{ .cve_id }} affects {{ .package_name }} ({{ .ecosystem }}) in repository {{ .repository }}. CVSS score: {{ .cvss_score }}. The alert is currently open and unresolved.",
-	"likelihood_hint": "{{ .severity }}",
+	"name": "stale_vulnerability_dismissal",
+	"title": "{{ .cve_id }}: dismissed {{ .severity }} severity vulnerability needs reassessment",
+	"statement": "{{ .cve_id }} affects {{ .package_name }} ({{ .ecosystem }}) in repository {{ .repository }} and was dismissed more than 90 days ago without reassessment.",
+	"likelihood_hint": "moderate",
 	"impact_hint": "{{ .impact }}",
-	"violation_ids": ["open_cve_alert"],
+	"violation_ids": ["dismissal_not_reassessed"],
 	"dedupe_label_keys": ["cve_id"],
 	"label_schema": [
 		{"key": "repository", "description": "GitHub repository affected by the vulnerability"},
@@ -30,10 +32,10 @@ _advisory_id := input[0].security_advisory.cve_id if {
 	input[0].security_advisory.cve_id != ""
 } else := input[0].security_advisory.ghsa_id
 
-default title := "CVE vulnerability is remediated"
+default title := "Dismissed vulnerability is reassessed"
 
-title := sprintf("%s vulnerability is remediated", [_advisory_id]) if {
+title := sprintf("%s dismissed vulnerability is reassessed", [_advisory_id]) if {
 	_advisory_id != ""
 }
 
-description := "Each open Dependabot alert is evaluated individually. An open alert for a CVE constitutes a compliance violation that must be remediated."
+description := "A dismissed Dependabot alert should be reassessed at least every 90 days."

@@ -1,18 +1,20 @@
-package compliance_framework.dependabot_granular_open_alert
+package compliance_framework.dependabot_granular_patchable_dismissed_alert
 
 import future.keywords.in
 
-violation[{"id": "open_cve_alert"}] if {
-	input[0].state == "open"
+violation[{"id": "patchable_vulnerability_dismissed"}] if {
+	input[0].state == "dismissed"
+	input[0].dismissed_at != null
+	input[0].security_vulnerability.first_patched_version != null
 }
 
 risk_templates := [{
-	"name": "open_cve_vulnerability",
-	"title": "{{ .cve_id }}: {{ .severity }} severity in {{ .package_name }}",
-	"statement": "{{ .cve_id }} affects {{ .package_name }} ({{ .ecosystem }}) in repository {{ .repository }}. CVSS score: {{ .cvss_score }}. The alert is currently open and unresolved.",
-	"likelihood_hint": "{{ .severity }}",
+	"name": "patchable_vulnerability_dismissed",
+	"title": "{{ .cve_id }}: patchable {{ .severity }} severity vulnerability was dismissed",
+	"statement": "{{ .cve_id }} affects {{ .package_name }} ({{ .ecosystem }}) in repository {{ .repository }} and has an available patch, but the alert was dismissed rather than remediated.",
+	"likelihood_hint": "moderate",
 	"impact_hint": "{{ .impact }}",
-	"violation_ids": ["open_cve_alert"],
+	"violation_ids": ["patchable_vulnerability_dismissed"],
 	"dedupe_label_keys": ["cve_id"],
 	"label_schema": [
 		{"key": "repository", "description": "GitHub repository affected by the vulnerability"},
@@ -30,10 +32,10 @@ _advisory_id := input[0].security_advisory.cve_id if {
 	input[0].security_advisory.cve_id != ""
 } else := input[0].security_advisory.ghsa_id
 
-default title := "CVE vulnerability is remediated"
+default title := "Patchable dismissed vulnerability is remediated"
 
-title := sprintf("%s vulnerability is remediated", [_advisory_id]) if {
+title := sprintf("%s patchable dismissed vulnerability is remediated", [_advisory_id]) if {
 	_advisory_id != ""
 }
 
-description := "Each open Dependabot alert is evaluated individually. An open alert for a CVE constitutes a compliance violation that must be remediated."
+description := "A Dependabot alert with an available patch should not remain dismissed without remediation."
