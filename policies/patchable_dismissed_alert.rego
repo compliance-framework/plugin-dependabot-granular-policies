@@ -39,7 +39,9 @@ _advisory_id := input[0].security_advisory.cve_id if {
 _security_vulnerability := object.get(input[0], "security_vulnerability", {})
 _severity := object.get(_security_vulnerability, "severity", "unknown")
 _first_patched_version := object.get(_security_vulnerability, "first_patched_version", {})
-_patched_version := object.get(_first_patched_version, "identifier", "unknown")
+_patched_version := object.get(_first_patched_version, "identifier", "unknown") if {
+	is_object(_first_patched_version)
+} else := "unknown"
 _dependency := object.get(input[0], "dependency", {})
 _package := object.get(_dependency, "package", {})
 _package_name := object.get(_package, "name", "unknown package")

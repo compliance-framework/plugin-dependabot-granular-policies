@@ -27,6 +27,8 @@ reduce_day_ns(ns) := working_day_ns if {
 violation[{"id": "critical_vulnerability_sla_breached"}] if {
 	input[0].state == "open"
 	input[0].security_vulnerability.severity == "critical"
+	is_string(input[0].created_at)
+	input[0].created_at != ""
 	working_day_now_ns := reduce_day_ns(time.now_ns())
 	seven_days_ago := working_day_now_ns - (7 * one_day_ns)
 	time.parse_rfc3339_ns(input[0].created_at) < seven_days_ago
@@ -35,6 +37,8 @@ violation[{"id": "critical_vulnerability_sla_breached"}] if {
 violation[{"id": "high_vulnerability_sla_breached"}] if {
 	input[0].state == "open"
 	input[0].security_vulnerability.severity == "high"
+	is_string(input[0].created_at)
+	input[0].created_at != ""
 	working_day_now_ns := reduce_day_ns(time.now_ns())
 	two_weeks_ago := working_day_now_ns - (14 * one_day_ns)
 	time.parse_rfc3339_ns(input[0].created_at) < two_weeks_ago
@@ -43,6 +47,8 @@ violation[{"id": "high_vulnerability_sla_breached"}] if {
 violation[{"id": "medium_vulnerability_sla_breached"}] if {
 	input[0].state == "open"
 	input[0].security_vulnerability.severity == "medium"
+	is_string(input[0].created_at)
+	input[0].created_at != ""
 	working_day_now_ns := reduce_day_ns(time.now_ns())
 	one_month_ago := working_day_now_ns - (28 * one_day_ns)
 	time.parse_rfc3339_ns(input[0].created_at) < one_month_ago
@@ -51,6 +57,8 @@ violation[{"id": "medium_vulnerability_sla_breached"}] if {
 violation[{"id": "low_vulnerability_sla_breached"}] if {
 	input[0].state == "open"
 	input[0].security_vulnerability.severity == "low"
+	is_string(input[0].created_at)
+	input[0].created_at != ""
 	working_day_now_ns := reduce_day_ns(time.now_ns())
 	three_months_ago := working_day_now_ns - (84 * one_day_ns)
 	time.parse_rfc3339_ns(input[0].created_at) < three_months_ago
@@ -143,6 +151,8 @@ _sla_days := 7 if {
 } else := 0
 _working_day_now_ns := reduce_day_ns(time.now_ns())
 _created_age_days := floor((_working_day_now_ns - time.parse_rfc3339_ns(_created_at)) / one_day_ns) if {
+	is_string(_created_at)
+	_created_at != null
 	_created_at != "unknown"
 } else := -1
 _created_age_text := sprintf("%d days", [_created_age_days]) if {

@@ -83,7 +83,7 @@ Each alert is evaluated **independently**. The policy receives a one-element arr
 ]
 ```
 
-A fixed or dismissed alert produces an input like:
+A fixed alert produces an input like:
 
 ```json
 [
