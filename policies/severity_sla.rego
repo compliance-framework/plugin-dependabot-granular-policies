@@ -141,7 +141,8 @@ _sla_days := 7 if {
 } else := 84 if {
 	_severity == "low"
 } else := 0
-_created_age_days := floor((time.now_ns() - time.parse_rfc3339_ns(_created_at)) / one_day_ns) if {
+_working_day_now_ns := reduce_day_ns(time.now_ns())
+_created_age_days := floor((_working_day_now_ns - time.parse_rfc3339_ns(_created_at)) / one_day_ns) if {
 	_created_at != "unknown"
 } else := -1
 _created_age_text := sprintf("%d days", [_created_age_days]) if {

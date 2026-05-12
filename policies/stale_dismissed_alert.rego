@@ -9,6 +9,7 @@ skip_reason := sprintf("Alert state is %s, this policy only applies to dismissed
 violation[{"id": "dismissal_not_reassessed"}] if {
 	input[0].state == "dismissed"
 	input[0].dismissed_at != null
+	is_string(input[0].dismissed_at)
 	time.parse_rfc3339_ns(input[0].dismissed_at) < time.now_ns() - ninety_days_ns
 }
 
