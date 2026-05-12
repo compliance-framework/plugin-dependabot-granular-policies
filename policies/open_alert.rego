@@ -30,9 +30,9 @@ risk_templates := [{
 	],
 }]
 
-_advisory_id := input[0].security_advisory.cve_id if {
-	input[0].security_advisory.cve_id != ""
-} else := input[0].security_advisory.ghsa_id
+_advisory_id := object.get(object.get(input[0], "security_advisory", {}), "cve_id", "") if {
+	object.get(object.get(input[0], "security_advisory", {}), "cve_id", "") != ""
+} else := object.get(object.get(input[0], "security_advisory", {}), "ghsa_id", "")
 
 _security_vulnerability := object.get(input[0], "security_vulnerability", {})
 _severity := object.get(_security_vulnerability, "severity", "unknown")
@@ -40,7 +40,9 @@ _dependency := object.get(input[0], "dependency", {})
 _package := object.get(_dependency, "package", {})
 _package_name := object.get(_package, "name", "unknown package")
 _ecosystem := object.get(_package, "ecosystem", "unknown ecosystem")
-_cvss_score := object.get(object.get(object.get(input[0], "security_advisory", {}), "cvss", {}), "score", 0)
+_cvss_score := object.get(object.get(object.get(input[0], "security_advisory", {}), "cvss", {}), "score", 0) if {
+	is_number(object.get(object.get(object.get(input[0], "security_advisory", {}), "cvss", {}), "score", 0))
+} else := 0
 
 default title := "CVE vulnerability is remediated"
 

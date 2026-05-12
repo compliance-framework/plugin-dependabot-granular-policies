@@ -127,9 +127,9 @@ risk_templates := [
 	}
 ]
 
-_advisory_id := input[0].security_advisory.cve_id if {
-	input[0].security_advisory.cve_id != ""
-} else := input[0].security_advisory.ghsa_id
+_advisory_id := object.get(object.get(input[0], "security_advisory", {}), "cve_id", "") if {
+	object.get(object.get(input[0], "security_advisory", {}), "cve_id", "") != ""
+} else := object.get(object.get(input[0], "security_advisory", {}), "ghsa_id", "")
 
 _alert := input[0]
 _security_vulnerability := object.get(_alert, "security_vulnerability", {})
@@ -154,6 +154,7 @@ _created_age_days := floor((_working_day_now_ns - time.parse_rfc3339_ns(_created
 	is_string(_created_at)
 	_created_at != null
 	_created_at != "unknown"
+	_created_at != ""
 } else := -1
 _created_age_text := sprintf("%d days", [_created_age_days]) if {
 	_created_age_days >= 0

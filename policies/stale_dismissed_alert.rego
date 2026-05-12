@@ -10,6 +10,7 @@ violation[{"id": "dismissal_not_reassessed"}] if {
 	input[0].state == "dismissed"
 	input[0].dismissed_at != null
 	is_string(input[0].dismissed_at)
+	input[0].dismissed_at != ""
 	time.parse_rfc3339_ns(input[0].dismissed_at) < time.now_ns() - ninety_days_ns
 }
 
@@ -33,9 +34,9 @@ risk_templates := [{
 	],
 }]
 
-_advisory_id := input[0].security_advisory.cve_id if {
-	input[0].security_advisory.cve_id != ""
-} else := input[0].security_advisory.ghsa_id
+_advisory_id := object.get(object.get(input[0], "security_advisory", {}), "cve_id", "") if {
+	object.get(object.get(input[0], "security_advisory", {}), "cve_id", "") != ""
+} else := object.get(object.get(input[0], "security_advisory", {}), "ghsa_id", "")
 
 _security_vulnerability := object.get(input[0], "security_vulnerability", {})
 _severity := object.get(_security_vulnerability, "severity", "unknown")
@@ -49,6 +50,7 @@ _dismissal_age_days := floor((time.now_ns() - time.parse_rfc3339_ns(_dismissed_a
 	is_string(_dismissed_at)
 	_dismissed_at != null
 	_dismissed_at != "unknown"
+	_dismissed_at != ""
 } else := -1
 _dismissal_age_text := sprintf("%d days", [_dismissal_age_days]) if {
 	_dismissal_age_days >= 0

@@ -32,9 +32,9 @@ risk_templates := [{
 	],
 }]
 
-_advisory_id := input[0].security_advisory.cve_id if {
-	input[0].security_advisory.cve_id != ""
-} else := input[0].security_advisory.ghsa_id
+_advisory_id := object.get(object.get(input[0], "security_advisory", {}), "cve_id", "") if {
+	object.get(object.get(input[0], "security_advisory", {}), "cve_id", "") != ""
+} else := object.get(object.get(input[0], "security_advisory", {}), "ghsa_id", "")
 
 _security_vulnerability := object.get(input[0], "security_vulnerability", {})
 _severity := object.get(_security_vulnerability, "severity", "unknown")
