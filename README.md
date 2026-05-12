@@ -64,38 +64,42 @@ violation[{"id": "too_many_critical_vulnerabilities"}] if {
 
 ### Granular mode — input shape (this repo)
 
-Each alert is evaluated **independently**. The policy receives a single alert object:
+Each alert is evaluated **independently**. The policy receives a one-element array containing a single alert object:
 
 ```json
-{
-  "state": "open",
-  "security_advisory": {
-    "cve_id": "CVE-2024-1234",
-    "ghsa_id": "GHSA-xxxx-yyyy-zzzz",
-    "cvss": { "score": 9.8 }
-  },
-  "security_vulnerability": { "severity": "critical" },
-  "dependency": {
-    "package": { "name": "lodash", "ecosystem": "npm" }
+[
+  {
+    "state": "open",
+    "security_advisory": {
+      "cve_id": "CVE-2024-1234",
+      "ghsa_id": "GHSA-xxxx-yyyy-zzzz",
+      "cvss": { "score": 9.8 }
+    },
+    "security_vulnerability": { "severity": "critical" },
+    "dependency": {
+      "package": { "name": "lodash", "ecosystem": "npm" }
+    }
   }
-}
+]
 ```
 
-A fixed or dismissed alert produces an input like:
+A fixed alert produces an input like:
 
 ```json
-{
-  "state": "fixed",
-  "security_advisory": {
-    "cve_id": "CVE-2024-1234",
-    "ghsa_id": "GHSA-xxxx-yyyy-zzzz",
-    "cvss": { "score": 9.8 }
-  },
-  "security_vulnerability": { "severity": "critical" },
-  "dependency": {
-    "package": { "name": "lodash", "ecosystem": "npm" }
+[
+  {
+    "state": "fixed",
+    "security_advisory": {
+      "cve_id": "CVE-2024-1234",
+      "ghsa_id": "GHSA-xxxx-yyyy-zzzz",
+      "cvss": { "score": 9.8 }
+    },
+    "security_vulnerability": { "severity": "critical" },
+    "dependency": {
+      "package": { "name": "lodash", "ecosystem": "npm" }
+    }
   }
-}
+]
 ```
 
 Granular policies therefore check the state of the individual alert:
@@ -103,7 +107,7 @@ Granular policies therefore check the state of the individual alert:
 ```rego
 # Fail if this specific alert is still open
 violation[{"id": "open_cve_alert"}] if {
-    input.state == "open"
+    input[0].state == "open"
 }
 ```
 
@@ -142,18 +146,20 @@ Evaluate a single open alert:
 
 ```shell
 opa eval -I -b policies -f pretty data.compliance_framework.dependabot_granular_open_alert <<EOF
-{
-  "state": "open",
-  "security_advisory": {
-    "cve_id": "CVE-2024-1234",
-    "ghsa_id": "GHSA-xxxx-yyyy-zzzz",
-    "cvss": { "score": 9.8 }
-  },
-  "security_vulnerability": { "severity": "critical" },
-  "dependency": {
-    "package": { "name": "lodash", "ecosystem": "npm" }
+[
+  {
+    "state": "open",
+    "security_advisory": {
+      "cve_id": "CVE-2024-1234",
+      "ghsa_id": "GHSA-xxxx-yyyy-zzzz",
+      "cvss": { "score": 9.8 }
+    },
+    "security_vulnerability": { "severity": "critical" },
+    "dependency": {
+      "package": { "name": "lodash", "ecosystem": "npm" }
+    }
   }
-}
+]
 EOF
 ```
 
@@ -163,7 +169,7 @@ Expected output for an open alert:
 {
   "violation": [{"id": "open_cve_alert"}],
   "title": "CVE-2024-1234 vulnerability is remediated",
-  "description": "Each open Dependabot alert is evaluated individually. An open alert for a CVE constitutes a compliance violation that must be remediated."
+  "description": "Dependabot alert CVE-2024-1234 for package lodash (npm) is in state open with severity critical and CVSS score 9.8. Open alerts constitute a compliance violation that must be remediated."
 }
 ```
 
@@ -171,18 +177,20 @@ Evaluate a fixed alert (no violation expected):
 
 ```shell
 opa eval -I -b policies -f pretty data.compliance_framework.dependabot_granular_open_alert <<EOF
-{
-  "state": "fixed",
-  "security_advisory": {
-    "cve_id": "CVE-2024-1234",
-    "ghsa_id": "GHSA-xxxx-yyyy-zzzz",
-    "cvss": { "score": 9.8 }
-  },
-  "security_vulnerability": { "severity": "critical" },
-  "dependency": {
-    "package": { "name": "lodash", "ecosystem": "npm" }
+[
+  {
+    "state": "fixed",
+    "security_advisory": {
+      "cve_id": "CVE-2024-1234",
+      "ghsa_id": "GHSA-xxxx-yyyy-zzzz",
+      "cvss": { "score": 9.8 }
+    },
+    "security_vulnerability": { "severity": "critical" },
+    "dependency": {
+      "package": { "name": "lodash", "ecosystem": "npm" }
+    }
   }
-}
+]
 EOF
 ```
 
@@ -190,7 +198,7 @@ EOF
 
 Policies are written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/) under the `compliance_framework` package.
 
-The input document is always a **single** GitHub Dependabot alert object.
+The input document is always a one-element array containing a **single** GitHub Dependabot alert object.
 
 ```rego
 package compliance_framework.my_custom_rule
@@ -198,7 +206,7 @@ package compliance_framework.my_custom_rule
 import future.keywords.in
 
 violation[{"id": "open_cve_alert"}] if {
-    input.state == "open"
+    input[0].state == "open"
 }
 
 risk_templates := [{
@@ -219,10 +227,13 @@ description := "Each open Dependabot alert is evaluated individually."
 
 | Field | Type | Description |
 |---|---|---|
-| `input.state` | string | Alert state: `open`, `fixed`, `dismissed`, `auto_dismissed` |
-| `input.security_advisory.cve_id` | string | CVE identifier (may be empty) |
-| `input.security_advisory.ghsa_id` | string | GitHub Security Advisory identifier |
-| `input.security_advisory.cvss.score` | number | CVSS numeric score |
-| `input.security_vulnerability.severity` | string | `critical`, `high`, `medium`, or `low` |
-| `input.dependency.package.name` | string | Affected package name |
-| `input.dependency.package.ecosystem` | string | Package ecosystem (`npm`, `go`, `pip`, etc.) |
+| `input[0].state` | string | Alert state: `open`, `fixed`, `dismissed`, `auto_dismissed` |
+| `input[0].security_advisory.cve_id` | string | CVE identifier (may be empty) |
+| `input[0].security_advisory.ghsa_id` | string | GitHub Security Advisory identifier |
+| `input[0].security_advisory.cvss.score` | number | CVSS numeric score |
+| `input[0].security_vulnerability.severity` | string | `critical`, `high`, `medium`, or `low` |
+| `input[0].security_vulnerability.first_patched_version` | object/null | First patched dependency version, when available |
+| `input[0].created_at` | string | Alert creation timestamp |
+| `input[0].dismissed_at` | string/null | Alert dismissal timestamp |
+| `input[0].dependency.package.name` | string | Affected package name |
+| `input[0].dependency.package.ecosystem` | string | Package ecosystem (`npm`, `go`, `pip`, etc.) |
