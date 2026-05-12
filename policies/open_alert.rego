@@ -1,7 +1,5 @@
 package compliance_framework.dependabot_granular_open_alert
 
-import future.keywords.in
-
 skip_reason := sprintf("Alert state is %s, this policy only applies to open alerts", [input[0].state]) if {
 	input[0].state != "open"
 }

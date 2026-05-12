@@ -1,7 +1,5 @@
 package compliance_framework.dependabot_granular_patchable_dismissed_alert
 
-import future.keywords.in
-
 skip_reason := sprintf("Alert state is %s, this policy only applies to dismissed alerts", [input[0].state]) if {
 	input[0].state != "dismissed"
 }
