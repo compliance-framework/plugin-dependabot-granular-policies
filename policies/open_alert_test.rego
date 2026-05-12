@@ -74,3 +74,17 @@ test_title_falls_back_to_default_when_no_advisory_id if {
 	t := dependabot_granular_open_alert.title with input as [{}]
 	t == "CVE vulnerability is remediated"
 }
+
+test_skip_reason_set_for_dismissed_alert if {
+	sr := dependabot_granular_open_alert.skip_reason with input as [mock_dismissed_alert]
+	sr == "Alert state is dismissed, this policy only applies to open alerts"
+}
+
+test_skip_reason_set_for_fixed_alert if {
+	sr := dependabot_granular_open_alert.skip_reason with input as [mock_fixed_alert]
+	sr == "Alert state is fixed, this policy only applies to open alerts"
+}
+
+test_skip_reason_not_set_for_open_alert if {
+	not dependabot_granular_open_alert.skip_reason with input as [mock_open_alert]
+}

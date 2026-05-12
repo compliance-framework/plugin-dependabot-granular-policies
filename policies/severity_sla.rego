@@ -2,6 +2,10 @@ package compliance_framework.dependabot_granular_severity_sla
 
 one_day_ns := ((24 * 60) * 60) * 1000000000
 
+skip_reason := sprintf("Alert state is %s, this policy only applies to open alerts", [input[0].state]) if {
+	input[0].state != "open"
+}
+
 reduce_day_ns(ns) := ns if {
 	day := time.weekday(ns)
 	day != "Sunday"
@@ -95,10 +99,40 @@ _advisory_id := input[0].security_advisory.cve_id if {
 	input[0].security_advisory.cve_id != ""
 } else := input[0].security_advisory.ghsa_id
 
+_alert := input[0]
+_security_vulnerability := object.get(_alert, "security_vulnerability", {})
+_severity := object.get(_security_vulnerability, "severity", "unknown")
+_dependency := object.get(_alert, "dependency", {})
+_package := object.get(_dependency, "package", {})
+_package_name := object.get(_package, "name", "unknown package")
+_ecosystem := object.get(_package, "ecosystem", "unknown ecosystem")
+_state := object.get(_alert, "state", "unknown")
+_created_at := object.get(_alert, "created_at", "unknown")
+_sla_days := 7 if {
+	_severity == "critical"
+} else := 14 if {
+	_severity == "high"
+} else := 28 if {
+	_severity == "medium"
+} else := 84 if {
+	_severity == "low"
+} else := 0
+_created_age_days := floor((time.now_ns() - time.parse_rfc3339_ns(_created_at)) / one_day_ns) if {
+	_created_at != "unknown"
+} else := -1
+_created_age_text := sprintf("%d days", [_created_age_days]) if {
+	_created_age_days >= 0
+} else := "unknown"
+_sla_deadline_text := _created_age_text if {
+	_sla_days == 0
+} else := sprintf("%d working days", [_sla_days]) if {
+	_created_age_days >= 0
+} else := "unknown"
+
 default title := "Vulnerability remediation SLA is met"
 
 title := sprintf("%s vulnerability remediation SLA is met", [_advisory_id]) if {
 	_advisory_id != ""
 }
 
-description := "Open Dependabot alerts should be remediated within the SLA for their severity."
+description := sprintf("Dependabot alert %s for package %s (%s) is in state %s with severity %s. SLA is %s, created_at is %s, and observed age is %s.", [_advisory_id, _package_name, _ecosystem, _state, _severity, _sla_deadline_text, _created_at, _created_age_text])

@@ -44,3 +44,17 @@ test_title_uses_cve_id_when_present if {
 	t := dependabot_granular_patchable_dismissed_alert.title with input as [mock_alert]
 	t == "CVE-2024-1234 patchable dismissed vulnerability is remediated"
 }
+
+test_skip_reason_set_for_open_alert if {
+	sr := dependabot_granular_patchable_dismissed_alert.skip_reason with input as [object.union(mock_alert, {"state": "open"})]
+	sr == "Alert state is open, this policy only applies to dismissed alerts"
+}
+
+test_skip_reason_set_for_fixed_alert if {
+	sr := dependabot_granular_patchable_dismissed_alert.skip_reason with input as [object.union(mock_alert, {"state": "fixed"})]
+	sr == "Alert state is fixed, this policy only applies to dismissed alerts"
+}
+
+test_skip_reason_not_set_for_dismissed_alert if {
+	not dependabot_granular_patchable_dismissed_alert.skip_reason with input as [mock_alert]
+}

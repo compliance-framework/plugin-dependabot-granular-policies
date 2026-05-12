@@ -58,3 +58,17 @@ test_title_uses_cve_id_when_present if {
 	t := severity_sla.title with input as [base_alert]
 	t == "CVE-2024-1234 vulnerability remediation SLA is met"
 }
+
+test_skip_reason_set_for_dismissed_alert if {
+	sr := severity_sla.skip_reason with input as [object.union(base_alert, {"state": "dismissed"})]
+	sr == "Alert state is dismissed, this policy only applies to open alerts"
+}
+
+test_skip_reason_set_for_fixed_alert if {
+	sr := severity_sla.skip_reason with input as [object.union(base_alert, {"state": "fixed"})]
+	sr == "Alert state is fixed, this policy only applies to open alerts"
+}
+
+test_skip_reason_not_set_for_open_alert if {
+	not severity_sla.skip_reason with input as [base_alert]
+}

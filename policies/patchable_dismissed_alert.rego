@@ -2,6 +2,10 @@ package compliance_framework.dependabot_granular_patchable_dismissed_alert
 
 import future.keywords.in
 
+skip_reason := sprintf("Alert state is %s, this policy only applies to dismissed alerts", [input[0].state]) if {
+	input[0].state != "dismissed"
+}
+
 violation[{"id": "patchable_vulnerability_dismissed"}] if {
 	input[0].state == "dismissed"
 	input[0].dismissed_at != null
@@ -32,10 +36,19 @@ _advisory_id := input[0].security_advisory.cve_id if {
 	input[0].security_advisory.cve_id != ""
 } else := input[0].security_advisory.ghsa_id
 
+_security_vulnerability := object.get(input[0], "security_vulnerability", {})
+_severity := object.get(_security_vulnerability, "severity", "unknown")
+_first_patched_version := object.get(_security_vulnerability, "first_patched_version", {})
+_patched_version := object.get(_first_patched_version, "identifier", "unknown")
+_dependency := object.get(input[0], "dependency", {})
+_package := object.get(_dependency, "package", {})
+_package_name := object.get(_package, "name", "unknown package")
+_ecosystem := object.get(_package, "ecosystem", "unknown ecosystem")
+
 default title := "Patchable dismissed vulnerability is remediated"
 
 title := sprintf("%s patchable dismissed vulnerability is remediated", [_advisory_id]) if {
 	_advisory_id != ""
 }
 
-description := "A Dependabot alert with an available patch should not remain dismissed without remediation."
+description := sprintf("Dependabot alert %s for package %s (%s) is in state dismissed with severity %s and has an available patch at version %s. Patchable vulnerabilities should be remediated rather than dismissed.", [_advisory_id, _package_name, _ecosystem, _severity, _patched_version])
