@@ -64,7 +64,13 @@ risk_templates := [
 		"likelihood_hint": "high",
 		"impact_hint": "critical",
 		"violation_ids": ["critical_vulnerability_sla_breached"],
-		"dedupe_label_keys": ["cve_id"]
+		"dedupe_label_keys": ["cve_id"],
+		"label_schema": [
+			{"key": "repository", "description": "GitHub repository affected by the vulnerability"},
+			{"key": "cve_id", "description": "CVE or GHSA identifier of the vulnerability"},
+			{"key": "package_name", "description": "Name of the affected package"},
+			{"key": "ecosystem", "description": "Package ecosystem (go, npm, pip, etc.)"},
+		]
 	},
 	{
 		"name": "high_vulnerability_sla_breach",
@@ -73,7 +79,13 @@ risk_templates := [
 		"likelihood_hint": "moderate",
 		"impact_hint": "high",
 		"violation_ids": ["high_vulnerability_sla_breached"],
-		"dedupe_label_keys": ["cve_id"]
+		"dedupe_label_keys": ["cve_id"],
+		"label_schema": [
+			{"key": "repository", "description": "GitHub repository affected by the vulnerability"},
+			{"key": "cve_id", "description": "CVE or GHSA identifier of the vulnerability"},
+			{"key": "package_name", "description": "Name of the affected package"},
+			{"key": "ecosystem", "description": "Package ecosystem (go, npm, pip, etc.)"},
+		]
 	},
 	{
 		"name": "medium_vulnerability_sla_breach",
@@ -82,7 +94,13 @@ risk_templates := [
 		"likelihood_hint": "moderate",
 		"impact_hint": "moderate",
 		"violation_ids": ["medium_vulnerability_sla_breached"],
-		"dedupe_label_keys": ["cve_id"]
+		"dedupe_label_keys": ["cve_id"],
+		"label_schema": [
+			{"key": "repository", "description": "GitHub repository affected by the vulnerability"},
+			{"key": "cve_id", "description": "CVE or GHSA identifier of the vulnerability"},
+			{"key": "package_name", "description": "Name of the affected package"},
+			{"key": "ecosystem", "description": "Package ecosystem (go, npm, pip, etc.)"},
+		]
 	},
 	{
 		"name": "low_vulnerability_sla_breach",
@@ -91,7 +109,13 @@ risk_templates := [
 		"likelihood_hint": "low",
 		"impact_hint": "moderate",
 		"violation_ids": ["low_vulnerability_sla_breached"],
-		"dedupe_label_keys": ["cve_id"]
+		"dedupe_label_keys": ["cve_id"],
+		"label_schema": [
+			{"key": "repository", "description": "GitHub repository affected by the vulnerability"},
+			{"key": "cve_id", "description": "CVE or GHSA identifier of the vulnerability"},
+			{"key": "package_name", "description": "Name of the affected package"},
+			{"key": "ecosystem", "description": "Package ecosystem (go, npm, pip, etc.)"},
+		]
 	}
 ]
 
@@ -123,7 +147,7 @@ _created_age_days := floor((time.now_ns() - time.parse_rfc3339_ns(_created_at)) 
 _created_age_text := sprintf("%d days", [_created_age_days]) if {
 	_created_age_days >= 0
 } else := "unknown"
-_sla_deadline_text := _created_age_text if {
+_sla_deadline_text := "not applicable" if {
 	_sla_days == 0
 } else := sprintf("%d calendar days", [_sla_days]) if {
 	_created_age_days >= 0
