@@ -169,7 +169,7 @@ Expected output for an open alert:
 {
   "violation": [{"id": "open_cve_alert"}],
   "title": "CVE-2024-1234 vulnerability is remediated",
-  "description": "Each open Dependabot alert is evaluated individually. An open alert for a CVE constitutes a compliance violation that must be remediated."
+  "description": "Dependabot alert CVE-2024-1234 for package lodash (npm) is in state open with severity critical and CVSS score 9.8. Open alerts constitute a compliance violation that must be remediated."
 }
 ```
 

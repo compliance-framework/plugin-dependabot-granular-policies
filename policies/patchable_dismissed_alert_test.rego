@@ -21,7 +21,7 @@ test_patchable_dismissed_alert_produces_violation if {
 	violations[{"id": "patchable_vulnerability_dismissed"}]
 }
 
-test_non_dismissed_patchable_alert_no_violation if {
+test_dismissed_alert_without_dismissed_at_no_violation if {
 	alert := object.union(mock_alert, {"dismissed_at": null})
 	violations := dependabot_granular_patchable_dismissed_alert.violation with input as [alert]
 	count(violations) == 0

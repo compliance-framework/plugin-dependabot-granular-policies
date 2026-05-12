@@ -22,7 +22,7 @@ test_recent_dismissed_alert_no_violation if {
 	count(violations) == 0
 }
 
-test_non_dismissed_alert_no_violation if {
+test_dismissed_alert_without_dismissed_at_no_violation if {
 	now := time.parse_rfc3339_ns("2025-05-01T00:00:00Z")
 	alert := object.union(mock_alert, {"dismissed_at": null})
 	violations := dependabot_granular_stale_dismissed_alert.violation with input as [alert] with time.now_ns as now

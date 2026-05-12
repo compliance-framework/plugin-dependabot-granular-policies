@@ -125,7 +125,7 @@ _created_age_text := sprintf("%d days", [_created_age_days]) if {
 } else := "unknown"
 _sla_deadline_text := _created_age_text if {
 	_sla_days == 0
-} else := sprintf("%d working days", [_sla_days]) if {
+} else := sprintf("%d calendar days", [_sla_days]) if {
 	_created_age_days >= 0
 } else := "unknown"
 

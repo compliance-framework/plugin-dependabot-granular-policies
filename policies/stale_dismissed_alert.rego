@@ -43,8 +43,10 @@ _package := object.get(_dependency, "package", {})
 _package_name := object.get(_package, "name", "unknown package")
 _ecosystem := object.get(_package, "ecosystem", "unknown ecosystem")
 _dismissed_at := object.get(input[0], "dismissed_at", "unknown")
-_ninety_days_ns := 7776000000000000
-_dismissal_age_days := floor((time.now_ns() - time.parse_rfc3339_ns(_dismissed_at)) / ninety_days_ns) * 90 if {
+one_day_ns := ((24 * 60) * 60) * 1000000000
+_dismissal_age_days := floor((time.now_ns() - time.parse_rfc3339_ns(_dismissed_at)) / one_day_ns) if {
+	is_string(_dismissed_at)
+	_dismissed_at != null
 	_dismissed_at != "unknown"
 } else := -1
 _dismissal_age_text := sprintf("%d days", [_dismissal_age_days]) if {
