@@ -1,2 +1,5 @@
 lisa-design:
 W3-S2-T02: callers copied from mock-plugin-policies-1 with pins moved to v1.5.2 (6e7fc9c), push branch main (repo default). Manifest seeded 0.2.0 = latest final release v0.2.0 (tag f94ad77 is an ancestor of main). No version.txt added (release-please adds it). README describes only local bundling, so it is unchanged.
+
+lisa-selfreview:
+Pass 1: no findings. Files are byte-identical to the reviewed reference (plugin-file-attestation-policies#4); actionlint v1.7.12 clean; opa 1.14.1 build/check/test (38/38) pass; config top-level keys equal workflows release-please/defaults.json at v1.5.2.
