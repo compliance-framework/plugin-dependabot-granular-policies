@@ -38,9 +38,12 @@ _dependency := object.get(input[0], "dependency", {})
 _package := object.get(_dependency, "package", {})
 _package_name := object.get(_package, "name", "unknown package")
 _ecosystem := object.get(_package, "ecosystem", "unknown ecosystem")
+
+default _cvss_score := 0
+
 _cvss_score := object.get(object.get(object.get(input[0], "security_advisory", {}), "cvss", {}), "score", 0) if {
 	is_number(object.get(object.get(object.get(input[0], "security_advisory", {}), "cvss", {}), "score", 0))
-} else := 0
+}
 
 default title := "CVE vulnerability is remediated"
 

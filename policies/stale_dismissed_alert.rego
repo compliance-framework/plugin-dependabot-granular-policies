@@ -46,15 +46,21 @@ _package_name := object.get(_package, "name", "unknown package")
 _ecosystem := object.get(_package, "ecosystem", "unknown ecosystem")
 _dismissed_at := object.get(input[0], "dismissed_at", "unknown")
 one_day_ns := ((24 * 60) * 60) * 1000000000
+
+default _dismissal_age_days := -1
+
 _dismissal_age_days := floor((time.now_ns() - time.parse_rfc3339_ns(_dismissed_at)) / one_day_ns) if {
 	is_string(_dismissed_at)
 	_dismissed_at != null
 	_dismissed_at != "unknown"
 	_dismissed_at != ""
-} else := -1
+}
+
+default _dismissal_age_text := "unknown"
+
 _dismissal_age_text := sprintf("%d days", [_dismissal_age_days]) if {
 	_dismissal_age_days >= 0
-} else := "unknown"
+}
 
 default title := "Dismissed vulnerability is reassessed"
 
