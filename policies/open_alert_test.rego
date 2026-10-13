@@ -13,12 +13,10 @@ mock_open_alert := {
 		"cvss": {"score": 9.8},
 	},
 	"security_vulnerability": {"severity": "critical"},
-	"dependency": {
-		"package": {
-			"name": "lodash",
-			"ecosystem": "npm",
-		},
-	},
+	"dependency": {"package": {
+		"name": "lodash",
+		"ecosystem": "npm",
+	}},
 }
 
 mock_fixed_alert := object.union(mock_open_alert, {"state": "fixed"})

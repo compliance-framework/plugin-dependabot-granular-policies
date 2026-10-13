@@ -78,7 +78,7 @@ risk_templates := [
 			{"key": "cve_id", "description": "CVE or GHSA identifier of the vulnerability"},
 			{"key": "package_name", "description": "Name of the affected package"},
 			{"key": "ecosystem", "description": "Package ecosystem (go, npm, pip, etc.)"},
-		]
+		],
 	},
 	{
 		"name": "high_vulnerability_sla_breach",
@@ -93,7 +93,7 @@ risk_templates := [
 			{"key": "cve_id", "description": "CVE or GHSA identifier of the vulnerability"},
 			{"key": "package_name", "description": "Name of the affected package"},
 			{"key": "ecosystem", "description": "Package ecosystem (go, npm, pip, etc.)"},
-		]
+		],
 	},
 	{
 		"name": "medium_vulnerability_sla_breach",
@@ -108,7 +108,7 @@ risk_templates := [
 			{"key": "cve_id", "description": "CVE or GHSA identifier of the vulnerability"},
 			{"key": "package_name", "description": "Name of the affected package"},
 			{"key": "ecosystem", "description": "Package ecosystem (go, npm, pip, etc.)"},
-		]
+		],
 	},
 	{
 		"name": "low_vulnerability_sla_breach",
@@ -123,8 +123,8 @@ risk_templates := [
 			{"key": "cve_id", "description": "CVE or GHSA identifier of the vulnerability"},
 			{"key": "package_name", "description": "Name of the affected package"},
 			{"key": "ecosystem", "description": "Package ecosystem (go, npm, pip, etc.)"},
-		]
-	}
+		],
+	},
 ]
 
 _advisory_id := object.get(object.get(input[0], "security_advisory", {}), "cve_id", "") if {
@@ -140,6 +140,9 @@ _package_name := object.get(_package, "name", "unknown package")
 _ecosystem := object.get(_package, "ecosystem", "unknown ecosystem")
 _state := object.get(_alert, "state", "unknown")
 _created_at := object.get(_alert, "created_at", "unknown")
+
+default _sla_days := 0
+
 _sla_days := 7 if {
 	_severity == "critical"
 } else := 14 if {
@@ -148,22 +151,32 @@ _sla_days := 7 if {
 	_severity == "medium"
 } else := 84 if {
 	_severity == "low"
-} else := 0
+}
+
 _working_day_now_ns := reduce_day_ns(time.now_ns())
+
+default _created_age_days := -1
+
 _created_age_days := floor((_working_day_now_ns - time.parse_rfc3339_ns(_created_at)) / one_day_ns) if {
 	is_string(_created_at)
 	_created_at != null
 	_created_at != "unknown"
 	_created_at != ""
-} else := -1
+}
+
+default _created_age_text := "unknown"
+
 _created_age_text := sprintf("%d days", [_created_age_days]) if {
 	_created_age_days >= 0
-} else := "unknown"
+}
+
+default _sla_deadline_text := "unknown"
+
 _sla_deadline_text := "not applicable" if {
 	_sla_days == 0
 } else := sprintf("%d working days", [_sla_days]) if {
 	_created_age_days >= 0
-} else := "unknown"
+}
 
 default title := "Vulnerability remediation SLA is met"
 
