@@ -1,0 +1,6 @@
+lisa-design:
+- Two commits: `ci:` for the workflow swap, `style:` for opa fmt plus default-over-else, so the workflow change reviews on its own. Diff is ~60 lines, far under the 1000-line stacking threshold, so no format-only layer.
+- default-over-else applied to all 8 constant else fallbacks: `default x := c` plus the rule without its final else is equivalent for complete rules (default fires whenever no body yields a value, same as the trailing else). Proven by the main-vs-branch opa eval comparison (1409 inputs x 5 clocks x 4 packages).
+- prefer-string-interpolation (10) left: `$"..."` renders undefined values as "<undefined>" and numbers as plain digits, whereas sprintf makes the rule undefined or prints "%!s(int=5)". Changes output on malformed inputs.
+- equals-over-count (9, all in *_test.rego) left: spec says not to rewrite existing test assertions for style warnings.
+- No Regal ignores added; no test renamed (no identically-named-tests findings).
